@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from PyInstaller.utils.hooks import collect_submodules
 
-PROJECT_ROOT = Path(SPECPATH).resolve().parent.parent
+PROJECT_ROOT = Path(SPEC).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 hiddenimports = ['piri', 'piri.cli', *collect_submodules('piri')]

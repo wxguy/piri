@@ -30,7 +30,7 @@ def test_pyinstaller_spec_resolves_project_root_for_package_imports():
     spec = Path(__file__).parents[1] / "build" / "piri.spec"
     source = spec.read_text(encoding="utf-8")
 
-    assert "PROJECT_ROOT = Path(SPECPATH).resolve().parent.parent" in source
+    assert "PROJECT_ROOT = Path(SPEC).resolve().parent.parent" in source
     assert "sys.path.insert(0, str(PROJECT_ROOT))" in source
     assert "pathex=[str(PROJECT_ROOT)]" in source
     assert "['piri', 'piri.cli', *collect_submodules('piri')]" in source
