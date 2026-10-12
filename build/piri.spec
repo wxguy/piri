@@ -1,4 +1,9 @@
+import sys
+from pathlib import Path
 from PyInstaller.utils.hooks import collect_submodules
+
+PROJECT_ROOT = Path(SPECPATH).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 hiddenimports = collect_submodules('piri')
 
@@ -6,7 +11,7 @@ block_cipher = None
 
 a = Analysis(
     ['piri_entry.py'],
-    pathex=['..'],
+    pathex=[str(PROJECT_ROOT)],
     binaries=[],
     datas=[],
     hiddenimports=hiddenimports,
