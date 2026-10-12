@@ -205,19 +205,33 @@ jobs:
 
   release:
     name: Publish release
-    needs: [test-linux-artifacts, test-windows-artifacts, test-macos-artifacts]
+    needs:
+      - standalone-linux
+      - standalone-windows
+      - standalone-macos
+      - test-linux-artifacts
+      - test-windows-artifacts
+      - test-macos-artifacts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: standalone-*
+          name: standalone-linux-x86_64
           path: artifacts/standalone
-          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: standalone-windows-x86_64
+          path: artifacts/standalone
+      - uses: actions/download-artifact@v4
+        with:
+          name: standalone-macos-arm64
+          path: artifacts/standalone
       - uses: actions/checkout@v4
       - name: Verify artifacts
         run: |
-          find artifacts -type f -maxdepth 2 -print
-          test -n "$(find artifacts -type f | head -1)"
+          set -euo pipefail
+          find artifacts/standalone -maxdepth 1 -type f -print
+          test -n "$(find artifacts/standalone -maxdepth 1 -type f -print -quit)"
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
