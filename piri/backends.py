@@ -303,7 +303,10 @@ def extract_archive(path: str | Path, dest: str | Path, fmt: str,
             validate_target(root, name)
             if len(name) > policy.max_path_length:
                 raise UnsafeArchiveError(f"archive path is too long: {name}")
-        cmd = ["cpio", "-id", "--no-absolute-filenames", "-F", str(p)]
+        # Preflight rejects absolute and traversal paths. Avoid GNU cpio's
+        # --no-absolute-filenames option here: BSD cpio (the macOS default)
+        # applies its own safe extraction checks and does not support it.
+        cmd = ["cpio", "-id", "-F", str(p)]
         if policy.overwrite == "replace":
             cmd.insert(2, "-u")
         subprocess.run(cmd, check=True, cwd=root, capture_output=True, text=True)
