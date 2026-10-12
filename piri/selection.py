@@ -7,7 +7,6 @@ import statistics
 import tempfile
 import time
 import os
-import resource
 
 from .backends import create_archive, extract_archive
 from .formats import all_formats

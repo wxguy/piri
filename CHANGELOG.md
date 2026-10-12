@@ -5,6 +5,7 @@
 - Make GitHub standalone releases the user installation path, with a hosted Linux/macOS installer script and Windows release downloads.
 - Publish standalone releases through GitHub Releases.
 - Fix CPIO extraction with the BSD cpio implementation used by macOS.
+- Fix Windows test collection by removing an unused Unix-only resource import.
 
 ## 1.0.0
 
