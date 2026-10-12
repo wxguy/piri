@@ -5,7 +5,7 @@ from PyInstaller.utils.hooks import collect_submodules
 PROJECT_ROOT = Path(SPECPATH).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-hiddenimports = collect_submodules('piri')
+hiddenimports = ['piri', 'piri.cli', *collect_submodules('piri')]
 
 block_cipher = None
 
