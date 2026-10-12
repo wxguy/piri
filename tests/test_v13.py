@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import shutil
@@ -44,7 +45,11 @@ def test_zip_metadata_mode(tmp_path):
                             metadata=MetadataPolicy(), progress=Progress(enabled=False))
     target = out / "src" / "data" / "file-5.txt"
     assert target.exists()
-    assert target.stat().st_mode & 0o777 == 0o640
+    assert target.read_text(encoding="utf-8") == "piri-v13\n" * 6
+    # Windows exposes only a read-only flag through chmod; Unix permission
+    # bits cannot be asserted there.
+    if os.name != "nt":
+        assert target.stat().st_mode & 0o777 == 0o640
 
 
 def test_benchmark_has_memory_field(tmp_path):
