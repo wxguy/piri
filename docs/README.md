@@ -23,4 +23,4 @@ The generated site is written to `docs/build/`.
 
 ## Deployment
 
-The repository's GitHub Actions workflow builds this site and deploys it to GitHub Pages.
+The repository's GitHub Actions workflow uploads `docs/build/` as a uniquely named Pages artifact and deploys that artifact to GitHub Pages. The workflow requires **Settings → Pages → Build and deployment → Source → GitHub Actions**.
