@@ -40,4 +40,4 @@ jobs:
       - name: Upload website artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/build/ # Ensure this points to where Docura generates the production build
+          path: docs/dist/ # Ensure this points to where Docura generates the production build
