@@ -214,6 +214,7 @@ jobs:
       - test-macos-artifacts
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: standalone-linux-x86_64
@@ -226,7 +227,6 @@ jobs:
         with:
           name: standalone-macos-arm64
           path: artifacts/standalone
-      - uses: actions/checkout@v4
       - name: Verify artifacts
         run: |
           set -euo pipefail
