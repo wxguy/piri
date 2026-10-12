@@ -79,9 +79,125 @@ jobs:
           name: standalone-macos-arm64
           path: release/*
 
+  test-linux-artifacts:
+    name: Test Linux release artifacts
+    needs: standalone-linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: standalone-linux-x86_64
+          path: artifacts
+      - name: Test archive, installer and filesystem image
+        run: |
+          set -euo pipefail
+          mkdir -p extracted source
+          printf 'piri release smoke test\n' > source/smoke.txt
+
+          ARCHIVE="$(find artifacts -maxdepth 1 -name '*.tar.gz' -print -quit)"
+          RUN_INSTALLER="$(find artifacts -maxdepth 1 -name '*.run' -print -quit)"
+          IMAGE="$(find artifacts -maxdepth 1 -name '*.img' -print -quit)"
+          test -n "$ARCHIVE" && test -n "$RUN_INSTALLER" && test -n "$IMAGE"
+
+          tar -xzf "$ARCHIVE" -C extracted
+          BINARY="$PWD/extracted/piri/piri"
+          "$BINARY" --version
+          "$BINARY" --no-progress -i source -o smoke.zip
+          "$BINARY" --no-progress -t -i smoke.zip
+          "$BINARY" --no-progress -i smoke.zip -o restored
+          cmp source/smoke.txt restored/source/smoke.txt
+
+          PIRI_INSTALL_DIR="$RUNNER_TEMP/piri-install" bash "$RUN_INSTALLER"
+          "$RUNNER_TEMP/piri-install/piri" --version
+
+          e2fsck -fn "$IMAGE"
+          debugfs -R 'stat /piri' "$IMAGE" 2>&1 | grep -q 'Type: regular'
+
+  test-windows-artifacts:
+    name: Test Windows release artifacts
+    needs: standalone-windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: standalone-windows-x86_64
+          path: artifacts
+      - name: Test executable and portable ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Exe = Get-ChildItem artifacts -Filter 'piri-*-windows-x86_64.exe' | Select-Object -First 1
+          $Bundle = Get-ChildItem artifacts -Filter 'piri-*-windows-x86_64-portable.zip' | Select-Object -First 1
+          if (-not $Exe -or -not $Bundle) { throw 'Expected Windows executable and portable ZIP were not built.' }
+
+          $Portable = Join-Path $env:RUNNER_TEMP 'piri-portable-test'
+          Expand-Archive -Path $Bundle.FullName -DestinationPath $Portable -Force
+          $PortableExe = Get-ChildItem $Portable -Filter 'piri.exe' -Recurse | Select-Object -First 1
+          if (-not $PortableExe) { throw 'piri.exe is missing from the portable ZIP.' }
+
+          function Test-PiriExecutable($Executable) {
+            & $Executable --version
+            if ($LASTEXITCODE -ne 0) { throw "--version failed for $Executable" }
+            $Root = Join-Path $env:RUNNER_TEMP ([guid]::NewGuid().ToString())
+            $Source = Join-Path $Root 'source'
+            $Archive = Join-Path $Root 'smoke.zip'
+            $Restored = Join-Path $Root 'restored'
+            New-Item -ItemType Directory $Source -Force | Out-Null
+            Set-Content -Path (Join-Path $Source 'smoke.txt') -Value 'piri release smoke test' -NoNewline
+
+            & $Executable --no-progress -i $Source -o $Archive
+            if ($LASTEXITCODE -ne 0) { throw "ZIP creation failed for $Executable" }
+            & $Executable --no-progress -t -i $Archive
+            if ($LASTEXITCODE -ne 0) { throw "ZIP integrity test failed for $Executable" }
+            & $Executable --no-progress -i $Archive -o $Restored
+            if ($LASTEXITCODE -ne 0) { throw "ZIP extraction failed for $Executable" }
+            $RestoredFile = Join-Path $Restored 'source\smoke.txt'
+            if ((Get-Content -Raw $RestoredFile) -ne 'piri release smoke test') {
+              throw "ZIP round-trip content mismatch for $Executable"
+            }
+          }
+
+          Test-PiriExecutable $Exe.FullName
+          Test-PiriExecutable $PortableExe.FullName
+
+  test-macos-artifacts:
+    name: Test macOS release artifacts
+    needs: standalone-macos
+    runs-on: macos-14
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: standalone-macos-arm64
+          path: artifacts
+      - name: Test archive and disk image
+        run: |
+          set -euo pipefail
+          mkdir -p extracted source "$RUNNER_TEMP/piri-dmg"
+          printf 'piri release smoke test\n' > source/smoke.txt
+
+          ARCHIVE="$(find artifacts -maxdepth 1 -name '*.tar.gz' -print -quit)"
+          IMAGE="$(find artifacts -maxdepth 1 -name '*.dmg' -print -quit)"
+          test -n "$ARCHIVE" && test -n "$IMAGE"
+          tar -xzf "$ARCHIVE" -C extracted
+          BINARY="$PWD/extracted/piri/piri"
+          "$BINARY" --version
+          "$BINARY" --no-progress -i source -o smoke.zip
+          "$BINARY" --no-progress -t -i smoke.zip
+          "$BINARY" --no-progress -i smoke.zip -o restored
+          cmp source/smoke.txt restored/source/smoke.txt
+
+          MOUNT="$RUNNER_TEMP/piri-dmg"
+          hdiutil attach -readonly -nobrowse -mountpoint "$MOUNT" "$IMAGE"
+          trap 'hdiutil detach "$MOUNT" -quiet || true' EXIT
+          "$MOUNT/piri" --version
+          "$MOUNT/piri" --no-progress -i source -o dmg-smoke.zip
+          "$MOUNT/piri" --no-progress -t -i dmg-smoke.zip
+          hdiutil detach "$MOUNT" -quiet
+          trap - EXIT
+
   release:
     name: Publish release
-    needs: [standalone-linux, standalone-windows, standalone-macos]
+    needs: [test-linux-artifacts, test-windows-artifacts, test-macos-artifacts]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
