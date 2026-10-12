@@ -33,7 +33,7 @@ _FORMATS = (
     FormatSpec("tar.xz", (".tar.xz", ".txz"), True, True, "tar + xz", ("tar", "xz"), parallel_compression=True, kind="compressed-archive", priority=80),
     FormatSpec("tar.bz2", (".tar.bz2", ".tbz2", ".tbz"), True, True, "tar + pbzip2/bzip2", ("tar",), parallel_compression=True, kind="compressed-archive", priority=70),
     FormatSpec("tar.lz4", (".tar.lz4", ".tlz4"), True, True, "tar + lz4", ("tar", "lz4"), parallel_compression=True, kind="compressed-archive", priority=60),
-    FormatSpec("zip", (".zip",), True, True, "zip", ("zip",), kind="archive", priority=95),
+    FormatSpec("zip", (".zip",), True, True, "Python zipfile", kind="archive", priority=95),
     FormatSpec("7z", (".7z",), True, True, "7z/7zz", ("7z",), parallel_compression=True, parallel_extraction=True, kind="archive", priority=85),
     FormatSpec("cpio", (".cpio",), True, True, "cpio", ("cpio",), kind="archive", priority=45),
     # ar is a member/object archive rather than a general directory archive.
