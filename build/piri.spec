@@ -5,7 +5,7 @@ hiddenimports = collect_submodules('piri')
 block_cipher = None
 
 a = Analysis(
-    ['../piri/__main__.py'],
+    ['piri_entry.py'],
     pathex=['..'],
     binaries=[],
     datas=[],

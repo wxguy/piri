@@ -1,5 +1,7 @@
 import importlib.util
 from pathlib import Path
+import subprocess
+import sys
 
 
 _SCRIPT = Path(__file__).parents[1] / "build" / "build_portable.py"
@@ -7,6 +9,21 @@ _SPEC = importlib.util.spec_from_file_location("piri_build_portable", _SCRIPT)
 assert _SPEC and _SPEC.loader
 _BUILD_PORTABLE = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(_BUILD_PORTABLE)
+
+
+def test_pyinstaller_entrypoint_runs_from_source():
+    entrypoint = Path(__file__).parents[1] / "build" / "piri_entry.py"
+
+    result = subprocess.run(
+        [sys.executable, str(entrypoint), "--version"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    from piri import __version__
+
+    assert result.stdout.strip() == __version__
 
 
 def test_find_built_app_accepts_onedir_output(tmp_path: Path):
