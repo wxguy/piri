@@ -15,10 +15,11 @@ _FORMATS = (
 
 
 def _version(executable: str | None) -> str | None:
-    if not executable:
+    if not executable or executable == "python-zipfile":
         return None
     try:
-        proc = subprocess.run([executable, "--version"], capture_output=True, text=True, timeout=2)
+        proc = subprocess.run([executable, "--version"], capture_output=True, text=True,
+                              encoding="utf-8", errors="replace", timeout=2)
         text = (proc.stdout or proc.stderr).splitlines()
         return text[0].strip()[:160] if text else None
     except (OSError, subprocess.SubprocessError):

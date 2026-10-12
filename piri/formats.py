@@ -51,11 +51,11 @@ _FORMATS = (
     FormatSpec("zstd", (".zst",), True, False, "zstd", ("zstd",), kind="compressed-stream", priority=20, operations=("test",)),
     # ZIP-family application/package containers. They are intentionally read/test
     # only: a generic ZIP writer does not make a valid APK/JAR/WAR/EAR/AAR.
-    FormatSpec("apk", (".apk",), True, False, "zip", ("zip",), kind="application-container", priority=55),
-    FormatSpec("jar", (".jar",), True, False, "zip", ("zip",), kind="application-container", priority=55),
-    FormatSpec("war", (".war",), True, False, "zip", ("zip",), kind="application-container", priority=55),
-    FormatSpec("ear", (".ear",), True, False, "zip", ("zip",), kind="application-container", priority=55),
-    FormatSpec("aar", (".aar",), True, False, "zip", ("zip",), kind="application-container", priority=55),
+    FormatSpec("apk", (".apk",), True, False, "zip", kind="application-container", priority=55),
+    FormatSpec("jar", (".jar",), True, False, "zip", kind="application-container", priority=55),
+    FormatSpec("war", (".war",), True, False, "zip", kind="application-container", priority=55),
+    FormatSpec("ear", (".ear",), True, False, "zip", kind="application-container", priority=55),
+    FormatSpec("aar", (".aar",), True, False, "zip", kind="application-container", priority=55),
     FormatSpec("tar.lzma", (".tar.lzma", ".tlzma"), True, False, "bsdtar", ("bsdtar",), kind="compressed-archive", priority=25),
     FormatSpec("tar.Z", (".tar.Z",), True, False, "bsdtar", ("bsdtar",), kind="compressed-archive", priority=25),
     FormatSpec("tar.br", (".tar.br",), True, False, "bsdtar", ("bsdtar",), kind="compressed-archive", priority=25),

@@ -1,4 +1,5 @@
 from pathlib import Path
+import tarfile
 import zipfile
 
 from piri.detect import detect_format
@@ -83,3 +84,38 @@ def test_v20_existing_zip_detection_unchanged(tmp_path: Path):
     with zipfile.ZipFile(p, "w") as zf:
         zf.writestr("x.txt", b"x")
     assert detect_format(p).name == "zip"
+
+
+def test_zip_create_works_without_system_zip(monkeypatch, tmp_path: Path):
+    from piri import backends
+
+    monkeypatch.setattr(backends, "_which", lambda *names: None)
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "hello.txt").write_text("hello", encoding="utf-8")
+    archive = tmp_path / "archive.zip"
+
+    ArchiveEngine().create(src, archive)
+
+    with zipfile.ZipFile(archive) as zf:
+        assert zf.read("src/hello.txt") == b"hello"
+
+
+def test_tar_extract_fallback_sanitizes_metadata(tmp_path: Path):
+    from piri.backends import _extract_tar_member
+
+    class LegacyTarFile:
+        def extract(self, member, path):
+            self.member = member
+
+    member = tarfile.TarInfo("safe.txt")
+    member.mode = 0o4755
+    member.uid = 123
+    member.gid = 456
+    tf = LegacyTarFile()
+
+    _extract_tar_member(tf, member, tmp_path)
+
+    assert tf.member.mode == 0o755
+    assert tf.member.uid is None
+    assert tf.member.gid is None

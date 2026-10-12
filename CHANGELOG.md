@@ -6,6 +6,8 @@
 - Publish standalone releases through GitHub Releases.
 - Fix CPIO extraction with the BSD cpio implementation used by macOS.
 - Fix Windows test collection by removing an unused Unix-only resource import.
+- Support secure TAR extraction on Python versions without the tarfile data filter, including Python 3.10.
+- Create ZIP archives with Python's standard library so Windows does not require a separate zip executable.
 
 ## 1.0.0
 

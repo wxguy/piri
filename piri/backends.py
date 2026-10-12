@@ -5,6 +5,8 @@ import shutil
 import subprocess
 import tarfile
 import zipfile
+import inspect
+import copy
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -34,6 +36,23 @@ def _which(*names):
     return None
 
 
+def _extract_tar_member(tf: tarfile.TarFile, member: tarfile.TarInfo, root: Path) -> None:
+    """Extract a prevalidated TAR member across Python versions."""
+    if "filter" in inspect.signature(tf.extract).parameters:
+        tf.extract(member, root, filter="data")
+        return
+
+    # Python 3.10 lacks TarFile's data filter. Archive members have already
+    # been checked as a complete set; strip ownership and special mode bits
+    # here to preserve the data filter's metadata protections.
+    safe_member = copy.copy(member)
+    safe_member.uid = safe_member.gid = None
+    safe_member.uname = safe_member.gname = None
+    if safe_member.mode is not None:
+        safe_member.mode &= 0o755
+    tf.extract(safe_member, root)
+
+
 def backend_info(fmt: str) -> BackendInfo:
     if fmt == "tar":
         return BackendInfo(fmt, "tar", _which("tar"), False, False)
@@ -55,8 +74,7 @@ def backend_info(fmt: str) -> BackendInfo:
         exe = _which("lz4")
         return BackendInfo(fmt, "lz4", exe, bool(exe), False)
     if fmt == "zip":
-        exe = _which("zip")
-        return BackendInfo(fmt, "zip", exe, False, False)
+        return BackendInfo(fmt, "python-zipfile", "python-zipfile", False, False)
     if fmt == "7z":
         exe = _which("7z", "7zz")
         return BackendInfo(fmt, "7z/7zz", exe, bool(exe), bool(exe))
@@ -224,7 +242,7 @@ def _extract_stream_tar(path: Path, fmt: str, root: Path, policy: ExtractionPoli
     try:
         with tarfile.open(fileobj=proc.stdout, mode="r|") as tf:
             for m in tf:
-                tf.extract(m, root, filter="data")
+                _extract_tar_member(tf, m, root)
                 progress.update(label="extract")
         rc = proc.wait()
         if rc:
@@ -260,7 +278,7 @@ def extract_archive(path: str | Path, dest: str | Path, fmt: str,
             members = tf.getmembers()
             progress.total = len(members)
             for m in members:
-                tf.extract(m, root, filter="data")
+                _extract_tar_member(tf, m, root)
                 progress.update(label="extract")
             progress.complete("extract")
         return
@@ -422,7 +440,15 @@ def create_archive(src: str | Path, out: str | Path, fmt: str, jobs: int,
     if fmt == "tar" or fmt.startswith("tar."):
         _tar_create(src, out, fmt, jobs)
     elif fmt == "zip":
-        _run(["zip", "-rq", str(out), src.name], cwd=src.parent)
+        with zipfile.ZipFile(out.resolve(), "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            for item in sorted(src.rglob("*")):
+                if item.resolve() == out.resolve():
+                    continue
+                arcname = item.relative_to(src.parent).as_posix()
+                if item.is_dir():
+                    zf.write(item, arcname.rstrip("/") + "/")
+                else:
+                    zf.write(item, arcname)
     elif fmt == "cpio":
         # GNU cpio accepts a NUL-delimited file list, so names are never
         # reparsed through a shell. find supplies the list without loading it
