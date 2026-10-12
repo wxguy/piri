@@ -30,6 +30,6 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
 [Code]
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
-  if CurStep = ssPostInstall then
+  if (CurStep = ssPostInstall) and not WizardSilent then
     MsgBox('piri installed successfully. Open a new terminal and run: piri --version', mbInformation, MB_OK);
 end;

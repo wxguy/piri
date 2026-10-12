@@ -53,7 +53,7 @@ jobs:
           python-version: "3.13"
       - name: Install native archive backend
         shell: pwsh
-        run: choco install 7zip -y --no-progress
+        run: choco install 7zip innosetup -y --no-progress
       - run: python -m pip install --upgrade pip pyinstaller
       - run: .\build\build_windows.ps1
       - uses: actions/upload-artifact@v4
@@ -128,7 +128,8 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $Exe = Get-ChildItem artifacts -Filter 'piri-*-windows-x86_64.exe' | Select-Object -First 1
           $Bundle = Get-ChildItem artifacts -Filter 'piri-*-windows-x86_64-portable.zip' | Select-Object -First 1
-          if (-not $Exe -or -not $Bundle) { throw 'Expected Windows executable and portable ZIP were not built.' }
+          $Setup = Get-ChildItem artifacts -Filter 'piri-*-windows-x86_64-setup.exe' | Select-Object -First 1
+          if (-not $Exe -or -not $Bundle -or -not $Setup) { throw 'Expected Windows executable, portable ZIP and Setup installer were not built.' }
 
           $Portable = Join-Path $env:RUNNER_TEMP 'piri-portable-test'
           Expand-Archive -Path $Bundle.FullName -DestinationPath $Portable -Force
@@ -159,6 +160,13 @@ jobs:
 
           Test-PiriExecutable $Exe.FullName
           Test-PiriExecutable $PortableExe.FullName
+
+          $InstallDir = Join-Path $env:RUNNER_TEMP 'piri-setup-test'
+          $SetupProcess = Start-Process -FilePath $Setup.FullName -ArgumentList @(
+            '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$InstallDir"
+          ) -Wait -PassThru
+          if ($SetupProcess.ExitCode -ne 0) { throw "Setup installer failed with exit code $($SetupProcess.ExitCode)" }
+          Test-PiriExecutable (Join-Path $InstallDir 'piri.exe')
 
   test-macos-artifacts:
     name: Test macOS release artifacts

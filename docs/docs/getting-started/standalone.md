@@ -18,9 +18,11 @@ Standalone releases bundle the Python runtime and the native utilities staged fo
 
 ```text
 piri-<version>-windows-x86_64.exe
+piri-<version>-windows-x86_64-setup.exe
+piri-<version>-windows-x86_64-portable.zip
 ```
 
-The executable is produced with PyInstaller. A portable ZIP containing the executable and bundled native tools is also published.
+The Setup installer installs the PyInstaller onedir bundle on the host. Its runtime files stay installed alongside the executable, avoiding the temporary extraction performed by the one-file executable. The portable ZIP contains the same onedir bundle without installing it.
 
 ### Linux
 
@@ -30,7 +32,7 @@ piri-<version>-linux-x86_64.img
 piri-<version>-linux-x86_64.tar.gz
 ```
 
-The `.run` file is a self-extracting installer. The `.img` file is a raw ext4 filesystem image containing the complete portable bundle. It is **not a bootable operating system image**.
+The `.run` file installs the PyInstaller onedir bundle on the host. The `.img` file is a raw ext4 filesystem image containing the complete bundle. It is **not a bootable operating system image**.
 
 ### macOS
 
@@ -39,7 +41,7 @@ piri-<version>-macos-arm64.dmg
 piri-<version>-macos.tar.gz
 ```
 
-The DMG is the native macOS disk-image distribution.
+The DMG and tarball contain the PyInstaller onedir bundle, so its runtime files remain on disk between launches.
 
 ## Native backend policy
 

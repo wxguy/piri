@@ -6,15 +6,29 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'dist-portable' / 'piri'
 NATIVE = ['tar','pigz','gzip','zstd','xz','bzip2','pbzip2','lz4','zip','7z','7zz','cpio','ar','unrar','bsdtar','lha','uncompress','brotli','qemu-img','debugfs','unsquashfs']
 
+
+def find_built_app(dist: Path) -> Path | None:
+    """Find the PyInstaller onedir bundle produced by piri.spec."""
+    candidate = dist / 'piri'
+    return candidate if candidate.is_dir() else None
+
+
+def copy_built_app(built: Path, destination: Path) -> None:
+    """Copy PyInstaller output into the portable bundle directory."""
+    if built.is_dir():
+        shutil.copytree(built, destination)
+    else:
+        raise NotADirectoryError(f'Expected a PyInstaller onedir bundle: {built}')
+
+
 def main():
     shutil.rmtree(ROOT/'dist-portable', ignore_errors=True)
     subprocess.check_call(['pyinstaller','--noconfirm','--clean',str(ROOT/'build'/'piri.spec')], cwd=ROOT)
-    # PyInstaller's one-folder output is placed in dist/piri.
-    built = ROOT/'dist'/'piri'
-    if not built.exists():
-        raise SystemExit('PyInstaller did not produce dist/piri')
+    built = find_built_app(ROOT / 'dist')
+    if built is None:
+        raise SystemExit('PyInstaller did not produce the onedir bundle dist/piri/')
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(built, OUT)
+    copy_built_app(built, OUT)
     nd = OUT/'native'; nd.mkdir(exist_ok=True)
     found=[]
     for name in NATIVE:

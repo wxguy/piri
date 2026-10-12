@@ -20,8 +20,11 @@ ln -sf "$DEST/piri" "$HOME/.local/bin/piri"
 echo "Installed piri to $DEST"
 RUNEOF
 chmod +x "release/piri-${VERSION}-linux-x86_64.run"
-# Keep a filesystem image as a distribution image; it is not bootable.
+# Keep a filesystem image as a distribution image; it is not bootable. Size it
+# from the onedir bundle so included backends and future runtime growth fit.
 IMG="release/piri-${VERSION}-linux-x86_64.img"
-truncate -s 128M "$IMG"
+BUNDLE_MB="$(du -sm dist-portable/piri | cut -f1)"
+IMAGE_MB="$((BUNDLE_MB + BUNDLE_MB / 2 + 64))"
+truncate -s "${IMAGE_MB}M" "$IMG"
 # Populate the ext4 image with the complete portable bundle.
-mke2fs -q -t ext4 -d dist-portable/piri "$IMG" 131072
+mke2fs -q -t ext4 -d dist-portable/piri "$IMG"
