@@ -4,7 +4,7 @@ const config = {
   title: 'piri',
   tagline: 'Compress. Extract. Inspect. Benchmark. Securely.',
   favicon: 'img/favicon.svg',
-  url: 'https://wxguy.github.io',
+  url: 'https://wxguy.in',
   baseUrl: '/piri/',
   organizationName: 'wxguy',
   projectName: 'piri',

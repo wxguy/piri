@@ -27,18 +27,29 @@ jobs:
         working-directory: docs
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Crucial: Allows Docusaurus to read git metadata correctly
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: docs/package-lock.json
+
       - name: Install dependencies
         run: npm ci
+
       - name: Build website
         run: npm run build
+
+      # Crucial: Tells GitHub Pages to skip Jekyll scanning so underscore assets parse
+      - name: Add .nojekyll bypass file
+        run: touch build/.nojekyll
+
       - name: Set Pages artifact name
         id: pages-artifact
         run: echo "name=github-pages-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+
       - name: Upload website artifact
         uses: actions/upload-pages-artifact@v3
         with:
