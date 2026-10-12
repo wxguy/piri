@@ -38,15 +38,13 @@ The generated static site is placed in `docs/build/`.
 
 ## GitHub Pages
 
-The repository contains `.github/workflows/docs.yml`. It:
+The repository contains `.github/workflows/docs-deploy.yml`. On pushes to `main` (or a manual run), it:
 
-1. configures GitHub Pages and installs Node.js 22;
-2. installs the locked Docusaurus dependencies;
-3. builds the static site into `docs/build/`;
-4. uploads that directory as a uniquely named Pages artifact; and
-5. deploys that exact artifact on pushes to `main` or a manual workflow run.
+1. installs Node.js 22 and the locked Docusaurus dependencies;
+2. builds the static site into `docs/build/`; and
+3. publishes the generated files to the `gh-pages` branch.
 
-In repository settings, configure **Pages → Build and deployment → Source → GitHub Actions**.
+In repository settings, configure **Settings → Pages → Build and deployment → Source → Deploy from a branch**, then select `gh-pages` and `/(root)`.
 
 The Docusaurus configuration uses `url: https://wxguy.in` and `baseUrl: /piri/`, so the expected project site URL is:
 
