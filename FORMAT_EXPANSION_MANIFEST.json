@@ -1,0 +1,41 @@
+{
+  "version": "1.9.0",
+  "format_expansion": {
+    "new_compression_streams": [
+      "lzma",
+      "brotli",
+      "zstd",
+      "compress"
+    ],
+    "new_tar_combinations": [
+      "tar.lzma",
+      "tar.Z",
+      "tar.br"
+    ],
+    "additional_container_formats": [
+      "iso9660",
+      "cpio.gz",
+      "cpio.bz2",
+      "cpio.xz",
+      "cpio.zst"
+    ],
+    "read_only_libarchive_candidates": [
+      "deb",
+      "rpm",
+      "arj",
+      "zoo",
+      "sit",
+      "lha",
+      "cab",
+      "xar",
+      "warc"
+    ]
+  },
+  "design_rules": [
+    "A format is advertised as writable only when piri has a tested writer.",
+    "Compressed streams are not presented as archives unless they contain an archive container.",
+    "Optional libarchive formats remain capability-dependent.",
+    "Every new extractor must pass path/resource/security preflight.",
+    "Every new writable format requires round-trip and integrity tests."
+  ]
+}

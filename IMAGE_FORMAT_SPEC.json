@@ -1,0 +1,86 @@
+{
+  "version": "1.9.0",
+  "image_formats": {
+    "iso9660": {
+      "extensions": [
+        ".iso"
+      ],
+      "read": true,
+      "write": false,
+      "test": true
+    },
+    "udf": {
+      "extensions": [
+        ".udf",
+        ".iso"
+      ],
+      "read": true,
+      "write": false,
+      "test": true
+    },
+    "img": {
+      "extensions": [
+        ".img"
+      ],
+      "read": true,
+      "write": false,
+      "test": true
+    },
+    "raw_disk_image": {
+      "extensions": [
+        ".img",
+        ".dd",
+        ".raw"
+      ],
+      "read": true,
+      "write": false,
+      "test": true
+    },
+    "qcow2": {
+      "extensions": [
+        ".qcow2"
+      ],
+      "read": true,
+      "write": false,
+      "test": true
+    },
+    "vhd": {
+      "extensions": [
+        ".vhd"
+      ],
+      "read": true,
+      "write": false,
+      "test": true
+    },
+    "vhdx": {
+      "extensions": [
+        ".vhdx"
+      ],
+      "read": true,
+      "write": false,
+      "test": true
+    },
+    "vdi": {
+      "extensions": [
+        ".vdi"
+      ],
+      "read": true,
+      "write": false,
+      "test": true
+    },
+    "vmdk": {
+      "extensions": [
+        ".vmdk"
+      ],
+      "read": true,
+      "write": false,
+      "test": true
+    }
+  },
+  "policy": [
+    "Disk/image formats are separate from ordinary archive formats.",
+    "Raw images are never blindly extracted as archives.",
+    "Image readers must validate signatures and bounds before exposing files.",
+    "Image writers are disabled until a real, tested writer exists."
+  ]
+}

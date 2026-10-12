@@ -1,0 +1,21 @@
+piri v1.0.0 validation
+========================================================
+
+pytest: 62 passed
+
+Standalone build system:
+- Windows one-file .exe build with bundled native tools
+- Windows portable ZIP
+- Linux self-contained .run
+- Linux portable .tar.gz
+- Linux raw ext4 .img
+- macOS .dmg
+- macOS portable .tar.gz
+- bundled native utility resolution via PIRI_BUNDLED_BIN / PyInstaller runtime
+- GitHub tag release workflow for standalone artifacts
+- GitHub Releases receives all platform artifacts
+
+Note:
+- Local environment did not have PyInstaller, so native platform builds are
+  delegated to the GitHub Actions matrix.
+- 61 existing tests + 1 standalone runtime test = 62 passed.
