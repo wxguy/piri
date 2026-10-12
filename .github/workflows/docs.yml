@@ -20,6 +20,8 @@ jobs:
   build:
     name: Build Docusaurus
     runs-on: ubuntu-latest
+    outputs:
+      pages-artifact-name: ${{ steps.pages-artifact.outputs.name }}
     defaults:
       run:
         working-directory: docs
@@ -34,9 +36,13 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
+      - name: Set Pages artifact name
+        id: pages-artifact
+        run: echo "name=github-pages-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
       - name: Upload website artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          name: ${{ steps.pages-artifact.outputs.name }}
           path: docs/build
 
   deploy:
@@ -54,3 +60,5 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ needs.build.outputs.pages-artifact-name }}
